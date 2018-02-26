@@ -1,25 +1,32 @@
 #!/usr/bin/python3
 __requires__ = [
+    'appdirs ~= 1.4',
+    'cachecontrol[filecache] ~= 0.12.0',
     'click ~= 6.5',
     'python-dateutil ~= 2.6',
     'pyRFC3339 ~= 1.0',
     'requests ~= 2.5',
 ]
 __python_requires__ = '~= 3.5'
+from   appdirs      import AppDirs
 from   configparser import ConfigParser
 from   datetime     import datetime, time, timedelta
 import json
 import os
 from   pathlib      import Path
 import sys
+from   cachecontrol import CacheControl
+from   cachecontrol.caches.file_cache import FileCache
 import click
 from   dateutil.tz  import tzstr
 import pyrfc3339
 import requests
 
+APPDIRS = AppDirs('habits', 'jwodder')
+
 API_ENDPOINT = 'https://habitica.com/api/v3'
-CONFIG_FILE  = Path.home()/'.config'/'habitica.cfg'
-CRON_FILE    = Path.home()/'.cache'/'habitica'/'cron'
+CONFIG_FILE  = Path(APPDIRS.user_config_dir)/'habitica.cfg'
+CRON_FILE    = Path(APPDIRS.user_cache_dir)/'cron'
 
 ### TODO: Either move these to the config file or fetch them via the API:
 CRON_TZ   = tzstr('EST5EDT,M3.2.0,M11.1.0')
@@ -38,9 +45,13 @@ white   = colorer('white')
 
 class Habitica:
     def __init__(self, api_user, api_key, aliases):
-        self.s = requests.Session()
-        self.s.headers["x-api-user"] = api_user
-        self.s.headers["x-api-key"]  = api_key
+        s = requests.Session()
+        s.headers["x-api-user"] = api_user
+        s.headers["x-api-key"]  = api_key
+        self.s = CacheControl(
+            s,
+            cache=FileCache(os.path.join(APPDIRS.user_cache_dir, 'http.cache')),
+        )
         self.aliases = aliases
         self.cron_tz   = CRON_TZ
         self.cron_time = CRON_TIME
