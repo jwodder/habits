@@ -280,5 +280,46 @@ def status(hb, show_all):
 def cron(hb, force):
     hb.cron() if force else hb.cron_if_needed()
 
+@main.command()
+@click.pass_obj
+def quest(hb):
+    current_quest = hb.get('/groups/party')["data"]["quest"]
+    if not current_quest:
+        click.echo('Not currently on a quest')
+        return
+    progress = current_quest["progress"]
+    pending = hb.get("/user")["data"]["party"]["quest"]["progress"]
+    quest = hb.get('/content')["data"]["quests"][current_quest["key"]]
+    click.echo(quest["text"])
+    if "boss" in quest:
+        click.echo(
+            'HP: {} / {} (Pending: {})'.format(
+                progress["hp"],
+                quest["boss"]["hp"],
+                pending["up"],
+            )
+        )
+        if quest.get("rage"):
+            ### TODO: Is pending["down"] the pending rage increase?
+            click.echo(
+                'RAGE: {} / {}'.format(
+                    progress["rage"],
+                    quest["boss"]["rage"]["value"],
+                )
+            )
+    elif "collect" in quest:
+        ### TODO: Check this:
+        for k,v in quest["collect"].items():
+            click.echo(
+                '{}: {} / {} (Pending: {})'.format(
+                    v["text"],
+                    progress["collect"].get(k,0),
+                    v["count"],
+                    pending["collect"].get(k,0),
+                )
+            )
+    else:
+        print_json(progress)
+
 if __name__ == '__main__':
     main()
