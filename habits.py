@@ -97,7 +97,6 @@ class Habitica:
             self.touch_cronfile(pyrfc3339.parse(data["lastCron"]).timestamp())
 
     def cron(self):
-        ### TODO: Prettify output:
         print_json(self.post('/cron', data=''))
         self.touch_cronfile()
 
@@ -154,16 +153,14 @@ class Habitica:
                 click.echo(event.upper() + ':')
                 print_json(about)
         ### Do something with r["data"]["delta"]?
+        ### TODO: if r.get("notifications"):
         """
-        if r.get("notifications"):
-            '''
-            Example "notifications" entry:
-                {
-                    "data": {},
-                    "id": "ebceba1b-1ef1-44ee-8563-73f78fc9bef6",
-                    "type": "STREAK_ACHIEVEMENT"
-                }
-            '''
+        Example "notifications" entry:
+            {
+                "data": {},
+                "id": "ebceba1b-1ef1-44ee-8563-73f78fc9bef6",
+                "type": "STREAK_ACHIEVEMENT"
+            }
         """
 
 
@@ -195,7 +192,6 @@ def up(hb, task, no_cron):
         except KeyError:
             click.fail('{}: unknown task'.format(t))
     for t in tids:
-        ### Show task name & type?
         hb.task_up(t)
 
 @main.command()
@@ -212,16 +208,13 @@ def down(hb, task, no_cron):
         except KeyError:
             click.fail('{}: unknown task'.format(t))
     for t in tids:
-        ### Show task name & type?
         hb.task_down(t)
 
 @main.command()
 @click.option('-A', '--all', 'show_all', is_flag=True)
-@click.option('--ids', is_flag=True)
+#@click.option('--ids', is_flag=True)  ### TODO
 @click.pass_obj
-def status(hb, show_all, ids):
-    ### TODO: Honor (or remove?) --ids
-    ### TODO: Include alias names in output?
+def status(hb, show_all):
     user_data = hb.get('/user')["data"]
     ### TODO: Refresh cron file based on this information:
     click.echo('{} Last cron: {:%Y-%m-%d %H:%M:%S %Z}'.format(

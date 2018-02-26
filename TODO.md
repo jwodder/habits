@@ -1,0 +1,9 @@
+- Use a proper MVC structure in the code
+- `up` and `down`: Show the name (and type?) of each task?
+- Add a blank line between task responses?
+- Add a command for showing current quest status
+- `status`: Include alias names in output
+- Add To-Do management
+- Add options for controlling log level/verbosity
+- Add options for preventing cronning?
+- Prettify cron output
