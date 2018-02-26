@@ -7,3 +7,4 @@
 - Add options for controlling log level/verbosity
 - Add options for preventing cronning?
 - Prettify cron output
+- Add an option for showing the raw JSON response

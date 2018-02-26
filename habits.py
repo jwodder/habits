@@ -26,24 +26,15 @@ CRON_TZ   = tzstr('EST5EDT,M3.2.0,M11.1.0')
 CRON_TIME = time(4,0,0)
 
 def colorer(c):
-    ### TODO: Replace with `click.style()`?
-    return lambda txt, bold=False: \
-        '\033[{}{}m{}\033[0m'.format(c, ';1' if bold else '', txt)
+    return lambda txt, bold=False: click.style(txt, fg=c, bold=bold)
 
-red     = colorer(31)
-green   = colorer(32)
-yellow  = colorer(33)
-blue    = colorer(34)
-magenta = colorer(35)
-cyan    = colorer(36)
-white   = colorer(37)
-
-light_red     = colorer(91)
-light_green   = colorer(92)
-light_yellow  = colorer(93)
-light_blue    = colorer(94)
-light_magenta = colorer(95)
-light_cyan    = colorer(96)
+red     = colorer('red')
+green   = colorer('green')
+yellow  = colorer('yellow')
+blue    = colorer('blue')
+magenta = colorer('magenta')
+cyan    = colorer('cyan')
+white   = colorer('white')
 
 class Habitica:
     def __init__(self, api_user, api_key, aliases):
@@ -152,7 +143,7 @@ class Habitica:
             else:
                 click.echo(event.upper() + ':')
                 print_json(about)
-        ### Do something with r["data"]["delta"]?
+        ### Do something with r["data"]["delta"]?  (Is this money acquired?)
         ### TODO: if r.get("notifications"):
         """
         Example "notifications" entry:
