@@ -154,7 +154,6 @@ class Habitica:
             else:
                 click.echo(event.upper() + ':')
                 print_json(about)
-        ### Do something with r["data"]["delta"]?  (Is this money acquired?)
         ### TODO: if r.get("notifications"):
         """
         Example "notifications" entry:
@@ -302,7 +301,7 @@ def quest(hb):
         if quest.get("rage"):
             ### TODO: Is pending["down"] the pending rage increase?
             click.echo(
-                'RAGE: {} / {}'.format(
+                'Rage: {} / {}'.format(
                     progress["rage"],
                     quest["boss"]["rage"]["value"],
                 )

@@ -1,5 +1,7 @@
 - Use a proper MVC structure in the code
-- `up` and `down`: Show the name (and type?) of each task?
+- `up` and `down`:
+    - Show the name (and type?) of each task?
+    - Show gold, mana, & health acquired/lost
 - Add a blank line between task responses?
 - `status`: Include alias names in output
 - Add To-Do management
