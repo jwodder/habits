@@ -1,0 +1,7 @@
+# Python ~= 3.5
+appdirs                 ~= 1.4
+cachecontrol[filecache] ~= 0.12.0
+click                   ~= 6.5
+python-dateutil         ~= 2.6
+pyRFC3339               ~= 1.0
+requests                ~= 2.5

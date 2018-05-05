@@ -1,13 +1,4 @@
 #!/usr/bin/python3
-__requires__ = [
-    'appdirs ~= 1.4',
-    'cachecontrol[filecache] ~= 0.12.0',
-    'click ~= 6.5',
-    'python-dateutil ~= 2.6',
-    'pyRFC3339 ~= 1.0',
-    'requests ~= 2.5',
-]
-__python_requires__ = '~= 3.5'
 from   appdirs      import AppDirs
 from   configparser import ConfigParser
 from   datetime     import datetime, time, timedelta
