@@ -2,11 +2,10 @@
 - `up` and `down`:
     - Show the name (and type?) of each task?
     - Show gold, mana, & health acquired/lost
-- Add a blank line between task responses?
+    - Add a blank line between task responses?
 - `status`: Include alias names in output
 - Add To-Do management
 - Add options for controlling log level/verbosity
-- Add options for preventing cronning?
 - Prettify cron output
 - Add an option for showing the raw JSON response
 - Format quest progress nicely

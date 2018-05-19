@@ -142,8 +142,10 @@ class Habitica:
             elif event == "streakBonus":
                 # Ignore
                 pass
+            elif event == 'leveledUp':  ### TODO: Check casing
+                click.echo('LEVEL UP!')
             else:
-                click.echo(event.upper() + ':')
+                click.echo(event + ':')
                 print_json(about)
         ### TODO: if r.get("notifications"):
         """
