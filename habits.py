@@ -160,10 +160,16 @@ def print_json(obj, err=False):
     click.echo(json.dumps(obj, sort_keys=True, indent=4), err=err)
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
+@click.option(
+    '-c', '--config',
+    type         = click.Path(dir_okay=False),
+    default      = str(CONFIG_FILE),
+    show_default = True,
+)
 @click.pass_context
-def main(ctx):
+def main(ctx, config):
     cfg = ConfigParser()
-    cfg.read(str(CONFIG_FILE))
+    cfg.read(config)
     try:
         aliases = cfg['alias']
     except KeyError:
