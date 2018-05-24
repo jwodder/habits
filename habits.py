@@ -13,11 +13,12 @@ from   dateutil.tz  import tzstr
 import pyrfc3339
 import requests
 
-APPDIRS = AppDirs('habits', 'jwodder')
-
 API_ENDPOINT = 'https://habitica.com/api/v3'
-CONFIG_FILE  = Path(APPDIRS.user_config_dir)/'habitica.cfg'
-CRON_FILE    = Path(APPDIRS.user_cache_dir)/'cron'
+
+APPDIRS     = AppDirs('habits', 'jwodder')
+CONFIG_FILE = Path(APPDIRS.user_config_dir, 'habitica.cfg')
+CRON_FILE   = Path(APPDIRS.user_cache_dir, 'cron')
+HTTP_CACHE  = Path(APPDIRS.user_cache_dir, 'http.cache')
 
 ### TODO: Either move these to the config file or fetch them via the API:
 CRON_TZ   = tzstr('EST5EDT,M3.2.0,M11.1.0')
@@ -39,10 +40,7 @@ class Habitica:
         s = requests.Session()
         s.headers["x-api-user"] = api_user
         s.headers["x-api-key"]  = api_key
-        self.s = CacheControl(
-            s,
-            cache=FileCache(os.path.join(APPDIRS.user_cache_dir, 'http.cache')),
-        )
+        self.s = CacheControl(s, cache=FileCache(str(HTTP_CACHE)))
         self.aliases = aliases
         self.cron_tz   = CRON_TZ
         self.cron_time = CRON_TIME
