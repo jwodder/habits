@@ -1,8 +1,10 @@
 - Use a proper MVC structure in the code
 - `up` and `down`:
     - Show the name (and type?) of each task?
-    - Show gold, mana, & health acquired/lost
+    - Show gold, XP, mana, & health acquired/lost
     - Add a blank line between task responses?
+    - Don't show boss damage when not on a quest (despite the API returning it
+      anyway)
 - `status`: Include alias names in output
 - Add To-Do management
 - Add options for controlling log level/verbosity

@@ -280,7 +280,7 @@ def cron(hb, force):
 @click.pass_obj
 def quest(hb):
     current_quest = hb.get('/groups/party')["data"]["quest"]
-    if not current_quest:
+    if not current_quest or current_quest.get("active") is False:
         click.echo('Not currently on a quest')
         return
     progress = current_quest["progress"]
