@@ -188,7 +188,7 @@ def up(hb, task, no_cron):
         try:
             tids.append(hb.aliases[t])
         except KeyError:
-            click.fail('{}: unknown task'.format(t))
+            raise click.UsageError('{}: unknown task'.format(t))
     for t in tids:
         hb.task_up(t)
 
@@ -204,7 +204,7 @@ def down(hb, task, no_cron):
         try:
             tids.append(hb.aliases[t])
         except KeyError:
-            click.fail('{}: unknown task'.format(t))
+            raise click.UsageError('{}: unknown task'.format(t))
     for t in tids:
         hb.task_down(t)
 
