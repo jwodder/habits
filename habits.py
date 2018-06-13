@@ -1,11 +1,11 @@
 #!/usr/bin/python3
-from   appdirs      import AppDirs
-from   configparser import ConfigParser
 from   datetime     import datetime, time, timedelta
 import json
 import os
 from   pathlib      import Path
 import sys
+from   appdirs      import AppDirs
+from   configparser import ConfigParser
 from   cachecontrol import CacheControl
 from   cachecontrol.caches.file_cache import FileCache
 import click
