@@ -114,17 +114,22 @@ class Habitica:
         ).timestamp()
 
     def task_up(self, tid):
-        self.show_task_response(
+        return TaskResponse(
             self.post('/tasks/{}/score/up'.format(tid), data='')
         )
 
     def task_down(self, tid):
-        self.show_task_response(
+        return TaskResponse(
             self.post('/tasks/{}/score/down'.format(tid), data='')
         )
 
-    def show_task_response(self, r):
-        for event, about in sorted(r["data"]["_tmp"].items()):
+
+class TaskResponse:
+    def __init__(self, response_json):
+        self.response_json = response_json
+
+    def show(self):
+        for event, about in sorted(self.response_json["data"]["_tmp"].items()):
             if event == "quest":
                 if "progressDelta" in about:
                     ### Does about["collection"] even mean anything?
@@ -145,7 +150,7 @@ class Habitica:
             else:
                 click.echo(event + ':')
                 print_json(about)
-        ### TODO: if r.get("notifications"):
+        ### TODO: if self.response_json.get("notifications"):
         """
         Example "notifications" entry:
             {
@@ -154,6 +159,9 @@ class Habitica:
                 "type": "STREAK_ACHIEVEMENT"
             }
         """
+
+    def show_json(self):
+        print_json(self.response_json)
 
 
 def print_json(obj, err=False):
@@ -177,10 +185,11 @@ def main(ctx, config):
     ctx.obj = Habitica(cfg['auth']['api-user'], cfg['auth']['api-key'], aliases)
 
 @main.command()
+@click.option('-J', '--show-json', is_flag=True)
 @click.option('--no-cron', is_flag=True)
 @click.argument('task', nargs=-1)
 @click.pass_obj
-def up(hb, task, no_cron):
+def up(hb, task, no_cron, show_json):
     if not no_cron:
         hb.cron_if_needed()
     tids = []
@@ -190,13 +199,18 @@ def up(hb, task, no_cron):
         except KeyError:
             raise click.UsageError('{}: unknown task'.format(t))
     for t in tids:
-        hb.task_up(t)
+        r = hb.task_up(t)
+        if show_json:
+            r.show_json()
+        else:
+            r.show()
 
 @main.command()
+@click.option('-J', '--show-json', is_flag=True)
 @click.option('--no-cron', is_flag=True)
 @click.argument('task', nargs=-1)
 @click.pass_obj
-def down(hb, task, no_cron):
+def down(hb, task, no_cron, show_json):
     if not no_cron:
         hb.cron_if_needed()
     tids = []
@@ -206,7 +220,11 @@ def down(hb, task, no_cron):
         except KeyError:
             raise click.UsageError('{}: unknown task'.format(t))
     for t in tids:
-        hb.task_down(t)
+        r = hb.task_down(t)
+        if show_json:
+            r.show_json()
+        else:
+            r.show()
 
 @main.command()
 @click.option('-A', '--all', 'show_all', is_flag=True)

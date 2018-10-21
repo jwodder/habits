@@ -10,7 +10,7 @@
 - Add To-Do management
 - Add options for controlling log level/verbosity
 - Prettify cron output
-- Add an option for showing the raw JSON response
+- Give more commands `--show-json` options?
 - Format quest progress nicely
 - Write a README
 - Add a command for listing tasks with their IDs?
