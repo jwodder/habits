@@ -194,6 +194,7 @@ def main(ctx, config):
 @click.argument('task', nargs=-1)
 @click.pass_obj
 def up(hb, task, no_cron, show_json):
+    """ Check-off or +1 a task """
     if not no_cron:
         hb.cron_if_needed()
     tids = []
@@ -215,6 +216,7 @@ def up(hb, task, no_cron, show_json):
 @click.argument('task', nargs=-1)
 @click.pass_obj
 def down(hb, task, no_cron, show_json):
+    """ Uncheck or -1 a task """
     if not no_cron:
         hb.cron_if_needed()
     tids = []
@@ -235,6 +237,7 @@ def down(hb, task, no_cron, show_json):
 #@click.option('--ids', is_flag=True)  ### TODO
 @click.pass_obj
 def status(hb, show_all):
+    """ View current task progress """
     user_data = hb.get('/user')["data"]
     ### TODO: Refresh cron file based on this information:
     click.echo('{} Last cron: {:%Y-%m-%d %H:%M:%S %Z}'.format(
@@ -296,11 +299,13 @@ def status(hb, show_all):
 @click.option('-f', '--force', is_flag=True)
 @click.pass_obj
 def cron(hb, force):
+    """ Start new Habitica day """
     hb.cron() if force else hb.cron_if_needed()
 
 @main.command()
 @click.pass_obj
 def quest(hb):
+    """ Show current quest progress """
     current_quest = hb.get('/groups/party')["data"]["quest"]
     if not current_quest or current_quest.get("active") is False:
         click.echo('Not currently on a quest')
