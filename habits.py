@@ -304,16 +304,15 @@ def quest(hb):
                 )
             )
     elif "collect" in quest:
-        ### TODO: Check this:
         for k,v in quest["collect"].items():
             click.echo(
-                '{}: {} / {} (Pending: {})'.format(
+                '{}: {} / {}'.format(
                     v["text"],
                     progress["collect"].get(k,0),
                     v["count"],
-                    pending["collect"].get(k,0),
                 )
             )
+        click.echo('Pending: {}'.format(pending["collectedItems"]))
     else:
         print_json(progress)
 
