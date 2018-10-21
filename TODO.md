@@ -3,14 +3,13 @@
     - Show the name (and type?) of each task?
     - Show gold, XP, mana, & health acquired/lost
     - Add a blank line between task responses?
-    - Don't show boss damage when not on a quest (despite the API returning it
-      anyway)
+    - Don't show boss damage when not on a boss-fighting quest (despite the API
+      returning it anyway)
+    - Don't show quest item collections when not on a collection quest
 - `status`: Include alias names in output
-- Find where the API is currently storing collection quest deltas & progress
 - Add To-Do management
 - Add options for controlling log level/verbosity
 - Prettify cron output
 - Give more commands `--show-json` options?
-- Format quest progress nicely
 - Write a README
 - Add a command for listing tasks with their IDs?

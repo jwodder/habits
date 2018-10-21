@@ -132,12 +132,16 @@ class TaskResponse:
         for event, about in sorted(self.response_json["data"]["_tmp"].items()):
             if event == "quest":
                 if "progressDelta" in about:
-                    ### Does about["collection"] even mean anything?
                     click.echo('QUEST: Damage to boss: {progressDelta}'
-                               .format(**about))
-                else:
-                    click.echo('QUEST:')
-                    print_json(about)
+                               .format_map(about))
+                if about.get("collection", 0) > 0:
+                    click.echo('QUEST: Collected {} quest item{}'.format(
+                        about["collection"],
+                        's' if about["collection"] > 1 else ''
+                    ))
+                #else:
+                #    click.echo('QUEST:')
+                #    print_json(about)
             elif event == "drop":
                 click.echo('DROP: ' + about["dialog"])
             elif event == "crit":
