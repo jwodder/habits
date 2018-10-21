@@ -6,8 +6,11 @@
     - Don't show boss damage when not on a quest (despite the API returning it
       anyway)
 - `status`: Include alias names in output
+- Find where the API is currently storing collection quest deltas & progress
 - Add To-Do management
 - Add options for controlling log level/verbosity
 - Prettify cron output
 - Add an option for showing the raw JSON response
 - Format quest progress nicely
+- Write a README
+- Add a command for listing tasks with their IDs?
