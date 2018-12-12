@@ -149,7 +149,7 @@ class TaskResponse:
             elif event == "streakBonus":
                 # Ignore
                 pass
-            elif event == 'leveledUp':  ### TODO: Check casing
+            elif event == 'leveledUp':
                 click.echo('LEVEL UP!')
             else:
                 click.echo(event + ':')
@@ -322,8 +322,7 @@ def quest(hb):
                 pending["up"],
             )
         )
-        if quest.get("rage"):
-            ### TODO: Is pending["down"] the pending rage increase?
+        if quest["boss"].get("rage"):
             click.echo(
                 'Rage: {} / {}'.format(
                     progress["rage"],
