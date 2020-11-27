@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-from   datetime     import datetime, time, timedelta
+from   datetime        import datetime, time, timedelta
 import json
 import os
-from   pathlib      import Path
+from   pathlib         import Path
 import sys
-from   appdirs      import AppDirs
-from   configparser import ConfigParser
-from   cachecontrol import CacheControl
+from   appdirs         import AppDirs
+from   configparser    import ConfigParser
+from   cachecontrol    import CacheControl
 from   cachecontrol.caches.file_cache import FileCache
 import click
-from   dateutil.tz  import tzstr
-import pyrfc3339
+from   dateutil.parser import isoparse
+from   dateutil.tz     import tzstr
 import requests
 
 API_ENDPOINT = 'https://habitica.com/api/v3'
@@ -64,8 +64,7 @@ class Habitica:
             else:
                 err_type = 'Unknown'
             click.echo(
-                '{0.status_code} {1} Error: {0.reason} for url: {0.url}'
-                    .format(r, err_type),
+                f'{r.status_code} {err_type} Error: {r.reason} for URL: {r.url}',
                 err=True,
             )
             try:
@@ -85,7 +84,7 @@ class Habitica:
         if data["needsCron"]:
             self.cron()
         else:
-            self.touch_cronfile(pyrfc3339.parse(data["lastCron"]).timestamp())
+            self.touch_cronfile(isoparse(data["lastCron"]).timestamp())
 
     def cron(self):
         print_json(self.post('/cron', data=''))
@@ -114,14 +113,10 @@ class Habitica:
         ).timestamp()
 
     def task_up(self, tid):
-        return TaskResponse(
-            self.post('/tasks/{}/score/up'.format(tid), data='')
-        )
+        return TaskResponse(self.post(f'/tasks/{tid}/score/up', data=''))
 
     def task_down(self, tid):
-        return TaskResponse(
-            self.post('/tasks/{}/score/down'.format(tid), data='')
-        )
+        return TaskResponse(self.post(f'/tasks/{tid}/score/down', data=''))
 
 
 class TaskResponse:
@@ -202,7 +197,7 @@ def up(hb, task, no_cron, show_json):
         try:
             tids.append(hb.aliases[t])
         except KeyError:
-            raise click.UsageError('{}: unknown task'.format(t))
+            raise click.UsageError(f'{t}: unknown task')
     for t in tids:
         r = hb.task_up(t)
         if show_json:
@@ -224,7 +219,7 @@ def down(hb, task, no_cron, show_json):
         try:
             tids.append(hb.aliases[t])
         except KeyError:
-            raise click.UsageError('{}: unknown task'.format(t))
+            raise click.UsageError(f'{t}: unknown task')
     for t in tids:
         r = hb.task_down(t)
         if show_json:
@@ -242,7 +237,7 @@ def status(hb, show_all):
     ### TODO: Refresh cron file based on this information:
     click.echo('{} Last cron: {:%Y-%m-%d %H:%M:%S %Z}'.format(
         red('!', bold=True) if user_data["needsCron"] else green('✓'),
-        pyrfc3339.parse(user_data["lastCron"]).astimezone(hb.cron_tz),
+        isoparse(user_data["lastCron"]).astimezone(hb.cron_tz),
     ))
     task_lines = {}
     for task in hb.get('/tasks/user')["data"]:
@@ -255,7 +250,7 @@ def status(hb, show_all):
         elif task["type"] == "habit":
             txt = '['
             if task["up"]:
-                num = '{:+3d}'.format(task["counterUp"])
+                num = f'{task["counterUp"]:+3d}'
                 if task["counterUp"] > 0:
                     num = green(num)
                 txt += num
@@ -263,7 +258,7 @@ def status(hb, show_all):
                 txt += ' - '
             txt += '/'
             if task["down"]:
-                num = '-{:<2d}'.format(task["counterDown"])
+                num = f'-{task["counterDown"]:<2d}'
                 if task["counterDown"] > 0:
                     num = red(num)
                 txt += num
@@ -338,7 +333,7 @@ def quest(hb):
                     v["count"],
                 )
             )
-        click.echo('Pending: {}'.format(pending["collectedItems"]))
+        click.echo(f'Pending: {pending["collectedItems"]}')
     else:
         print_json(progress)
 
