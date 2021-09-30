@@ -13,3 +13,4 @@
 - Give more commands `--show-json` options?
 - Write a README
 - Add a command for listing tasks with their IDs?
+- Set a custom User Agent?
