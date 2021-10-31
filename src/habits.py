@@ -16,20 +16,20 @@ import json
 import os
 from pathlib import Path
 import sys
-from appdirs import AppDirs
 from cachecontrol import CacheControl
 from cachecontrol.caches.file_cache import FileCache
 import click
 from dateutil.parser import isoparse
 from dateutil.tz import tzstr
+from platformdirs import PlatformDirs
 import requests
 
 API_ENDPOINT = "https://habitica.com/api/v3"
 
-APPDIRS = AppDirs("habits", "jwodder")
-CONFIG_FILE = Path(APPDIRS.user_config_dir, "habitica.cfg")
-CRON_FILE = Path(APPDIRS.user_cache_dir, "cron")
-HTTP_CACHE = Path(APPDIRS.user_cache_dir, "http.cache")
+DIRS = PlatformDirs("habits", "jwodder")
+CONFIG_FILE = DIRS.user_config_path / "habitica.cfg"
+CRON_FILE = DIRS.user_cache_path / "cron"
+HTTP_CACHE = DIRS.user_cache_path / "http.cache"
 
 ### TODO: Either move these to the config file or fetch them via the API:
 CRON_TZ = tzstr("EST5EDT,M3.2.0,M11.1.0")
@@ -110,7 +110,7 @@ class Habitica:
         self.cron_file.parent.mkdir(parents=True, exist_ok=True)
         self.cron_file.touch(exist_ok=True)
         if ts is not None:
-            os.utime(str(self.cron_file), times=(ts, ts))
+            os.utime(self.cron_file, times=(ts, ts))
 
     def last_scheduled_cron(self):
         """
@@ -189,8 +189,8 @@ def print_json(obj, err=False):
 @click.option(
     "-c",
     "--config",
-    type=click.Path(dir_okay=False),
-    default=str(CONFIG_FILE),
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=CONFIG_FILE,
     show_default=True,
 )
 @click.pass_context
