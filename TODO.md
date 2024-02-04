@@ -1,4 +1,3 @@
-- Use a proper MVC structure in the code
 - `up` and `down`:
     - Show the name (and type?) of each task?
     - Show gold, XP, mana, & health acquired/lost
