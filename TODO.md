@@ -14,3 +14,5 @@
 - Write a README
 - Add a command for listing tasks with their IDs?
 - Set a custom User Agent?
+- Implement command completion for task arguments
+    - <https://github.com/pallets/click/discussions/2170>

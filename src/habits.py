@@ -12,6 +12,7 @@ __url__ = "https://github.com/jwodder/habits"
 
 from configparser import ConfigParser
 from datetime import datetime, time, timedelta
+from difflib import get_close_matches
 import json
 import os
 from pathlib import Path
@@ -19,6 +20,7 @@ import sys
 from cachecontrol import CacheControl
 from cachecontrol.caches.file_cache import FileCache
 import click
+from click.shell_completion import CompletionItem
 from dateutil.parser import isoparse
 from dateutil.tz import tzstr
 from platformdirs import PlatformDirs
@@ -185,6 +187,22 @@ def print_json(obj, err=False):
     click.echo(json.dumps(obj, sort_keys=True, indent=4), err=err)
 
 
+class TaskParam(click.ParamType):
+    def convert(self, value, _param, ctx):
+        if value in ctx.obj.aliases:
+            return value
+        else:
+            candidates = get_close_matches(value, list(ctx.obj.aliases.keys()))
+            if candidates:
+                dym = " (Did you mean:" + "".join(f" {c}?" for c in candidates) + ")"
+            else:
+                dym = ""
+            self.fail(f"{value!r}: unknown task{dym}")
+
+    def shell_complete(self, ctx, _param, incomplete):
+        return [CompletionItem(c) for c in ctx.obj.aliases if c.startswith(incomplete)]
+
+
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
 @click.option(
     "-c",
@@ -207,7 +225,7 @@ def main(ctx, config):
 @main.command()
 @click.option("-J", "--show-json", is_flag=True)
 @click.option("--no-cron", is_flag=True)
-@click.argument("task", nargs=-1)
+@click.argument("task", type=TaskParam(), nargs=-1)
 @click.pass_obj
 def up(hb, task, no_cron, show_json):
     """Check-off or +1 a task"""
@@ -230,7 +248,7 @@ def up(hb, task, no_cron, show_json):
 @main.command()
 @click.option("-J", "--show-json", is_flag=True)
 @click.option("--no-cron", is_flag=True)
-@click.argument("task", nargs=-1)
+@click.argument("task", type=TaskParam(), nargs=-1)
 @click.pass_obj
 def down(hb, task, no_cron, show_json):
     """Uncheck or -1 a task"""
