@@ -1,11 +1,13 @@
 from __future__ import annotations
 from configparser import ConfigParser
+from dataclasses import dataclass
 from datetime import datetime, time, timedelta
 import json
 import os
 from pathlib import Path
 import platform
 import sys
+from typing import Any, Protocol
 from cachecontrol import CacheControl
 from cachecontrol.caches.file_cache import FileCache
 import click
@@ -35,7 +37,11 @@ CRON_TZ = tzstr("EST5EDT,M3.2.0,M11.1.0")
 CRON_TIME = time(4, 0, 0)
 
 
-def colorer(c):
+class Colorer(Protocol):
+    def __call__(self, txt: str, bold: bool = False) -> str: ...
+
+
+def colorer(c: str) -> Colorer:
     return lambda txt, bold=False: click.style(txt, fg=c, bold=bold)
 
 
@@ -49,7 +55,7 @@ white = colorer("white")
 
 
 class Habitica:
-    def __init__(self, api_user, api_key, aliases):
+    def __init__(self, api_user: str, api_key: str, aliases: dict[str, str]) -> None:
         s = requests.Session()
         s.headers["x-api-user"] = api_user
         s.headers["x-api-key"] = api_key
@@ -60,23 +66,24 @@ class Habitica:
         self.cron_time = CRON_TIME
         self.cron_file = CRON_FILE
 
-    def get(self, path, **kwargs):
+    def get(self, path: str, **kwargs: Any) -> Any:
         return self.request("GET", path, **kwargs)
 
-    def post(self, path, **kwargs):
+    def post(self, path: str, **kwargs: Any) -> Any:
         return self.request("POST", path, **kwargs)
 
-    def request(self, method, path, **kwargs):
+    def request(self, method: str, path: str, **kwargs: Any) -> Any:
         url = API_ENDPOINT.rstrip("/") + "/" + path.lstrip("/")
         r = self.s.request(method, url, **kwargs)
         if not r.ok:
-            ### TODO: Use requests_toolbelt.utils.dump.dump_response instead?
             if 400 <= r.status_code < 500:
                 err_type = "Client"
             elif 500 <= r.status_code < 600:
                 err_type = "Server"
             else:
                 err_type = "Unknown"
+            ### TODO: Raise a dedicated exception (handled by a decorator on
+            ### all click.command functions) instead of this:
             click.echo(
                 f"{r.status_code} {err_type} Error: {r.reason} for URL: {r.url}",
                 err=True,
@@ -88,34 +95,34 @@ class Habitica:
             else:
                 print_json(resp, err=True)
             sys.exit(1)
-        return r.json()  ### TODO: Does the API ever return non-JSON?
+        return r.json()  # Does the API ever return non-JSON?
 
-    def cron_if_needed(self):
+    def cron_if_needed(self) -> None:
         if (
             self.cron_file.exists()
-            and self.cron_file.stat().st_mtime >= self.last_scheduled_cron()
+            and self.cron_file.stat().st_mtime >= self.last_scheduled_cron().timestamp()
         ):
             return
         data = self.get("/user")["data"]
         if data["needsCron"]:
             self.cron()
         else:
-            self.touch_cronfile(isoparse(data["lastCron"]).timestamp())
+            self.touch_cronfile(isoparse(data["lastCron"]))
 
-    def cron(self):
+    def cron(self) -> None:
         print_json(self.post("/cron", data=""))
         self.touch_cronfile()
 
-    def touch_cronfile(self, ts=None):
+    def touch_cronfile(self, ts: datetime | None = None) -> None:
         self.cron_file.parent.mkdir(parents=True, exist_ok=True)
         self.cron_file.touch(exist_ok=True)
         if ts is not None:
-            os.utime(self.cron_file, times=(ts, ts))
+            ts_secs = ts.timestamp()
+            os.utime(self.cron_file, times=(ts_secs, ts_secs))
 
-    def last_scheduled_cron(self):
+    def last_scheduled_cron(self) -> datetime:
         """
-        Calculate the *nix timestamp for the most recent `cron_time` in
-        `cron_tz`
+        Calculate the timestamp for the most recent `cron_time` in `cron_tz`
         """
         now = datetime.now(self.cron_tz)
         if now.time() >= self.cron_time:
@@ -126,20 +133,20 @@ class Habitica:
         return datetime.combine(
             cron_date,
             self.cron_time.replace(tzinfo=self.cron_tz),
-        ).timestamp()
+        )
 
-    def task_up(self, tid):
+    def task_up(self, tid: str) -> TaskResponse:
         return TaskResponse(self.post(f"/tasks/{tid}/score/up", data=""))
 
-    def task_down(self, tid):
+    def task_down(self, tid: str) -> TaskResponse:
         return TaskResponse(self.post(f"/tasks/{tid}/score/down", data=""))
 
 
+@dataclass
 class TaskResponse:
-    def __init__(self, response_json):
-        self.response_json = response_json
+    response_json: dict[str, Any]
 
-    def show(self):
+    def show(self) -> None:
         for event, about in sorted(self.response_json["data"]["_tmp"].items()):
             if event == "quest":
                 if "progressDelta" in about:
@@ -177,12 +184,8 @@ class TaskResponse:
             }
         """
 
-    def show_json(self):
+    def show_json(self) -> None:
         print_json(self.response_json)
-
-
-def print_json(obj, err=False):
-    click.echo(json.dumps(obj, sort_keys=True, indent=4), err=err)
 
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
@@ -194,11 +197,12 @@ def print_json(obj, err=False):
     show_default=True,
 )
 @click.pass_context
-def main(ctx, config):
+def main(ctx: click.Context, config: Path) -> None:
     cfg = ConfigParser()
     cfg.read(config)
+    aliases: dict[str, str]
     try:
-        aliases = cfg["alias"]
+        aliases = dict(cfg["alias"])
     except KeyError:
         aliases = {}
     ctx.obj = Habitica(cfg["auth"]["api-user"], cfg["auth"]["api-key"], aliases)
@@ -209,7 +213,7 @@ def main(ctx, config):
 @click.option("--no-cron", is_flag=True)
 @click.argument("task", nargs=-1)
 @click.pass_obj
-def up(hb, task, no_cron, show_json):
+def up(hb: Habitica, task: str, no_cron: bool, show_json: bool) -> None:
     """Check-off or +1 a task"""
     if not no_cron:
         hb.cron_if_needed()
@@ -232,7 +236,7 @@ def up(hb, task, no_cron, show_json):
 @click.option("--no-cron", is_flag=True)
 @click.argument("task", nargs=-1)
 @click.pass_obj
-def down(hb, task, no_cron, show_json):
+def down(hb: Habitica, task: str, no_cron: bool, show_json: bool) -> None:
     """Uncheck or -1 a task"""
     if not no_cron:
         hb.cron_if_needed()
@@ -254,7 +258,7 @@ def down(hb, task, no_cron, show_json):
 @click.option("-A", "--all", "show_all", is_flag=True)
 # @click.option('--ids', is_flag=True)  ### TODO
 @click.pass_obj
-def status(hb, show_all):
+def status(hb: Habitica, show_all: bool) -> None:
     """View current task progress"""
     user_data = hb.get("/user")["data"]
     ### TODO: Refresh cron file based on this information:
@@ -319,14 +323,14 @@ def status(hb, show_all):
 @main.command()
 @click.option("-f", "--force", is_flag=True)
 @click.pass_obj
-def cron(hb, force):
+def cron(hb: Habitica, force: bool) -> None:
     """Start new Habitica day"""
     hb.cron() if force else hb.cron_if_needed()
 
 
 @main.command()
 @click.pass_obj
-def quest(hb):
+def quest(hb: Habitica) -> None:
     """Show current quest progress"""
     current_quest = hb.get("/groups/party")["data"]["quest"]
     if not current_quest or current_quest.get("active") is False:
@@ -363,6 +367,10 @@ def quest(hb):
         click.echo(f'Pending: {pending["collectedItems"]}')
     else:
         print_json(progress)
+
+
+def print_json(obj: Any, err: bool = False) -> None:
+    click.echo(json.dumps(obj, sort_keys=True, indent=4), err=err)
 
 
 if __name__ == "__main__":
