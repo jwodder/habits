@@ -24,6 +24,7 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
     "License :: OSI Approved :: MIT License",
+    "Typing :: Typed",
 ]
 
 dependencies = [
@@ -42,12 +43,12 @@ habits = "habits:main"
 "Bug Tracker" = "https://github.com/jwodder/habits/issues"
 
 [tool.hatch.version]
-path = "habits.py"
+path = "src/habits/__init__.py"
 
 [tool.hatch.build.targets.sdist]
 include = [
     "/docs",
-    "/habits.py",
+    "/src",
     "/test",
     "CHANGELOG.*",
     "CONTRIBUTORS.*",
@@ -56,3 +57,19 @@ include = [
 
 [tool.hatch.envs.default]
 python = "3"
+
+[tool.mypy]
+allow_incomplete_defs = false
+allow_untyped_defs = false
+ignore_missing_imports = false
+# <https://github.com/python/mypy/issues/7773>:
+no_implicit_optional = true
+implicit_reexport = false
+local_partial_types = true
+pretty = true
+show_error_codes = true
+show_traceback = true
+strict_equality = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
