@@ -2,6 +2,7 @@ from __future__ import annotations
 from configparser import ConfigParser
 from dataclasses import dataclass
 from datetime import datetime, time, timedelta
+from difflib import get_close_matches
 import json
 import os
 from pathlib import Path
@@ -11,6 +12,7 @@ from typing import Any, Protocol
 from cachecontrol import CacheControl
 from cachecontrol.caches.file_cache import FileCache
 import click
+from click.shell_completion import CompletionItem
 from dateutil.parser import isoparse
 from dateutil.tz import tzstr
 from platformdirs import PlatformDirs
@@ -188,6 +190,26 @@ class TaskResponse:
         print_json(self.response_json)
 
 
+class TaskParam(click.ParamType):
+    def convert(
+        self, value: str, _param: click.Parameter | None, ctx: click.Context | None
+    ) -> str:
+        if ctx is None or value in ctx.obj.aliases:
+            return value
+        else:
+            candidates = get_close_matches(value, list(ctx.obj.aliases.keys()))
+            if candidates:
+                dym = " (Did you mean:" + "".join(f" {c}?" for c in candidates) + ")"
+            else:
+                dym = ""
+            self.fail(f"{value!r}: unknown task{dym}")
+
+    def shell_complete(
+        self, ctx: click.Context, _param: click.Parameter, incomplete: str
+    ) -> list[CompletionItem]:
+        return [CompletionItem(c) for c in ctx.obj.aliases if c.startswith(incomplete)]
+
+
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
 @click.option(
     "-c",
@@ -211,7 +233,7 @@ def main(ctx: click.Context, config: Path) -> None:
 @main.command()
 @click.option("-J", "--show-json", is_flag=True)
 @click.option("--no-cron", is_flag=True)
-@click.argument("task", nargs=-1)
+@click.argument("task", type=TaskParam(), nargs=-1)
 @click.pass_obj
 def up(hb: Habitica, task: str, no_cron: bool, show_json: bool) -> None:
     """Check-off or +1 a task"""
@@ -234,7 +256,7 @@ def up(hb: Habitica, task: str, no_cron: bool, show_json: bool) -> None:
 @main.command()
 @click.option("-J", "--show-json", is_flag=True)
 @click.option("--no-cron", is_flag=True)
-@click.argument("task", nargs=-1)
+@click.argument("task", type=TaskParam(), nargs=-1)
 @click.pass_obj
 def down(hb: Habitica, task: str, no_cron: bool, show_json: bool) -> None:
     """Uncheck or -1 a task"""
