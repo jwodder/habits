@@ -36,7 +36,7 @@ dependencies = [
 ]
 
 [project.scripts]
-habits = "habits:main"
+habits = "habits.__main__:main"
 
 [project.urls]
 "Source Code" = "https://github.com/jwodder/habits"
@@ -54,9 +54,6 @@ include = [
     "CONTRIBUTORS.*",
     "tox.ini",
 ]
-
-[tool.hatch.envs.default]
-python = "3"
 
 [tool.mypy]
 allow_incomplete_defs = false
