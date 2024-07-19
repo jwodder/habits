@@ -4,17 +4,13 @@ Mini Habitica client
 Visit <https://github.com/jwodder/habits> for more information.
 """
 
-__version__ = "0.1.0.dev1"
-__author__ = "John Thorvald Wodder II"
-__author_email__ = "habits@varonathe.org"
-__license__ = "MIT"
-__url__ = "https://github.com/jwodder/habits"
-
+from __future__ import annotations
 from configparser import ConfigParser
 from datetime import datetime, time, timedelta
 import json
 import os
 from pathlib import Path
+import platform
 import sys
 from cachecontrol import CacheControl
 from cachecontrol.caches.file_cache import FileCache
@@ -23,6 +19,20 @@ from dateutil.parser import isoparse
 from dateutil.tz import tzstr
 from platformdirs import PlatformDirs
 import requests
+
+__version__ = "0.1.0.dev1"
+__author__ = "John Thorvald Wodder II"
+__author_email__ = "habits@varonathe.org"
+__license__ = "MIT"
+__url__ = "https://github.com/jwodder/habits"
+
+USER_AGENT = "habits/{} ({}) requests/{} {}/{}".format(
+    __version__,
+    __url__,
+    requests.__version__,
+    platform.python_implementation(),
+    platform.python_version(),
+)
 
 API_ENDPOINT = "https://habitica.com/api/v3"
 
