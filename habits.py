@@ -64,6 +64,7 @@ class Habitica:
         s = requests.Session()
         s.headers["x-api-user"] = api_user
         s.headers["x-api-key"] = api_key
+        s.headers["x-client"] = "1c26156c-0419-4622-bfe5-94ce36f70551 - habits"
         self.s = CacheControl(s, cache=FileCache(str(HTTP_CACHE)))
         self.aliases = aliases
         self.cron_tz = CRON_TZ
