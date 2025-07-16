@@ -8,11 +8,10 @@ from pathlib import Path
 import platform
 import sys
 from typing import Any, Protocol
+from zoneinfo import ZoneInfo
 from cachecontrol import CacheControl
 from cachecontrol.caches.file_cache import FileCache
 import click
-from dateutil.parser import isoparse
-from dateutil.tz import tzstr
 from platformdirs import PlatformDirs
 import requests
 from . import __url__, __version__
@@ -33,7 +32,7 @@ CRON_FILE = DIRS.user_cache_path / "cron"
 HTTP_CACHE = DIRS.user_cache_path / "http.cache"
 
 ### TODO: Either move these to the config file or fetch them via the API:
-CRON_TZ = tzstr("EST5EDT,M3.2.0,M11.1.0")
+CRON_TZ = ZoneInfo("America/New_York")
 CRON_TIME = time(4, 0, 0)
 
 
@@ -107,7 +106,7 @@ class Habitica:
         if data["needsCron"]:
             self.cron()
         else:
-            self.touch_cronfile(isoparse(data["lastCron"]))
+            self.touch_cronfile(datetime.fromisoformat(data["lastCron"]))
 
     def cron(self) -> None:
         print_json(self.post("/cron", data=""))
@@ -265,7 +264,7 @@ def status(hb: Habitica, show_all: bool) -> None:
     click.echo(
         "{} Last cron: {:%Y-%m-%d %H:%M:%S %Z}".format(
             red("!", bold=True) if user_data["needsCron"] else green("✓"),
-            isoparse(user_data["lastCron"]).astimezone(hb.cron_tz),
+            datetime.fromisoformat(user_data["lastCron"]).astimezone(hb.cron_tz),
         )
     )
     task_lines = {}
