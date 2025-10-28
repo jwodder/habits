@@ -303,7 +303,7 @@ def status(hb: Habitica, show_all: bool) -> None:
         task_lines[task["id"]] = txt
     tasks_order = user_data["tasksOrder"]
     if show_all:
-        to_show = set(tid for order in tasks_order.values() for tid in order)
+        to_show = {tid for order in tasks_order.values() for tid in order}
     else:
         to_show = set(hb.aliases.values())
     for header, key in [
